@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlix - Sua plataforma de streaming</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-content">
+            <div class="navbar-left">
+                <div class="logo">StreamFlix</div>
+                <div class="nav-links" id="navLinks">
+                    <a href="#home" onclick="navigateTo('home')" class="nav-link">Início</a>
+                    <a href="#movies" onclick="navigateTo('movies')" class="nav-link">Filmes</a>
+                    <a href="#series" onclick="navigateTo('series')" class="nav-link">Séries</a>
+                    <a href="#watchlist" onclick="navigateTo('watchlist')" class="nav-link user-only" style="display: none;">Minha Lista</a>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Buscar filmes e séries..." class="search-input">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </div>
+
+            <!-- User Menu -->
+            <div class="user-menu">
+                <div class="auth-buttons" id="authButtons">
+                    <button onclick="navigateTo('login')" class="btn btn-secondary">Entrar</button>
+                    <button onclick="navigateTo('register')" class="btn btn-primary">Cadastrar</button>
+                </div>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span class="username" id="usernameDisplay"></span>
+                    <button onclick="logout()" class="btn btn-secondary">Sair</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="mainContent">
+        <!-- Home Page -->
+        <div id="homePage" class="page">
+            <!-- Hero Section -->
+            <div class="hero" id="heroSection">
+                <div class="hero-content">
+                    <h1 class="hero-title" id="heroTitle"></h1>
+                    <p class="hero-description" id="heroDescription"></p>
+                    <div class="hero-buttons">
+                        <button onclick="watchContent()" class="btn btn-primary btn-large">▶ Assistir</button>
+                        <button onclick="toggleWatchlist(window.featuredContent?.id)" class="btn btn-secondary btn-large user-only" style="display: none;">+ Minha Lista</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Sections -->
+            <div class="content-sections">
+                <section class="content-section">
+                    <h2 class="section-title">Em Destaque</h2>
+                    <div class="content-grid" id="featuredGrid"></div>
+                </section>
+
+                <section class="content-section">
+                    <h2 class="section-title">Todos os Conteúdos</h2>
+                    <div class="content-grid" id="allContentGrid"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Movies Page -->
+        <div id="moviesPage" class="page" style="display: none;">
+            <div class="page-header">
+                <h1>Filmes</h1>
+            </div>
+            <div class="content-sections">
+                <section class="content-section">
+                    <h2 class="section-title">Filmes em Destaque</h2>
+                    <div class="content-grid" id="featuredMoviesGrid"></div>
+                </section>
+                <section class="content-section">
+                    <h2 class="section-title">Todos os Filmes</h2>
+                    <div class="content-grid" id="allMoviesGrid"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Series Page -->
+        <div id="seriesPage" class="page" style="display: none;">
+            <div class="page-header">
+                <h1>Séries</h1>
+            </div>
+            <div class="content-sections">
+                <section class="content-section">
+                    <h2 class="section-title">Séries em Destaque</h2>
+                    <div class="content-grid" id="featuredSeriesGrid"></div>
+                </section>
+                <section class="content-section">
+                    <h2 class="section-title">Todas as Séries</h2>
+                    <div class="content-grid" id="allSeriesGrid"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Watchlist Page -->
+        <div id="watchlistPage" class="page" style="display: none;">
+            <div class="page-header">
+                <h1>Minha Lista</h1>
+            </div>
+            <div class="content-sections">
+                <div id="watchlistEmpty" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📝</div>
+                    <h2>Sua lista está vazia</h2>
+                    <p>Adicione filmes e séries à sua lista para assistir mais tarde.</p>
+                    <div class="empty-buttons">
+                        <button onclick="navigateTo('movies')" class="btn btn-primary">Explorar Filmes</button>
+                        <button onclick="navigateTo('series')" class="btn btn-secondary">Explorar Séries</button>
+                    </div>
+                </div>
+                <div class="content-grid" id="watchlistGrid"></div>
+            </div>
+        </div>
+
+        <!-- Content Detail Page -->
+        <div id="contentDetailPage" class="page" style="display: none;">
+            <div class="detail-hero" id="detailHero">
+                <div class="detail-content">
+                    <h1 class="detail-title" id="detailTitle"></h1>
+                    <div class="detail-meta" id="detailMeta"></div>
+                    <p class="detail-description" id="detailDescription"></p>
+                    <div class="detail-buttons">
+                        <button onclick="watchCurrentContent()" class="btn btn-primary btn-large">▶ Assistir Agora</button>
+                        <button onclick="toggleWatchlist(window.currentContent?.id)" class="btn btn-secondary btn-large user-only" id="watchlistBtn" style="display: none;">Adicionar à Lista</button>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-info">
+                <div class="detail-main">
+                    <section class="detail-section">
+                        <h2>Sinopse</h2>
+                        <p id="detailFullDescription"></p>
+                    </section>
+                    <section class="detail-section" id="castSection">
+                        <h2>Elenco</h2>
+                        <div class="cast-grid" id="castGrid"></div>
+                    </section>
+                    <section class="detail-section" id="directorsSection">
+                        <h2>Direção</h2>
+                        <div class="cast-grid" id="directorsGrid"></div>
+                    </section>
+                </div>
+                <div class="detail-sidebar">
+                    <img id="detailPoster" class="detail-poster" alt="">
+                    <div class="detail-specs" id="detailSpecs"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="loginPage" class="page auth-page" style="display: none;">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1 class="auth-logo">StreamFlix</h1>
+                    <h2>Entrar na sua conta</h2>
+                    <p>Acesse milhares de filmes e séries</p>
+                </div>
+                <form class="auth-form" onsubmit="login(event)">
+                    <div class="form-group">
+                        <label for="loginUsername">Nome de usuário</label>
+                        <input type="text" id="loginUsername" required placeholder="Digite seu nome de usuário">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Senha</label>
+                        <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large">Entrar</button>
+                </form>
+                <div class="auth-footer">
+                    <p>Não tem uma conta? <a href="#register" onclick="navigateTo('register')">Cadastre-se agora</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="registerPage" class="page auth-page" style="display: none;">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1 class="auth-logo">StreamFlix</h1>
+                    <h2>Criar sua conta</h2>
+                    <p>Junte-se a milhões de usuários</p>
+                </div>
+                <form class="auth-form" onsubmit="register(event)">
+                    <div class="form-group">
+                        <label for="registerUsername">Nome de usuário</label>
+                        <input type="text" id="registerUsername" required placeholder="Escolha um nome de usuário">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Senha</label>
+                        <input type="password" id="registerPassword" required minlength="6" placeholder="Crie uma senha (mín. 6 caracteres)">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large">Criar Conta</button>
+                </form>
+                <div class="auth-footer">
+                    <p>Já tem uma conta? <a href="#login" onclick="navigateTo('login')">Entrar agora</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results Page -->
+        <div id="searchPage" class="page" style="display: none;">
+            <div class="page-header">
+                <h1 id="searchTitle">Resultados da Busca</h1>
+            </div>
+            <div class="content-sections">
+                <div id="searchEmpty" class="empty-state" style="display: none;">
+                    <div class="empty-icon">🔍</div>
+                    <h2>Nenhum resultado encontrado</h2>
+                    <p>Tente buscar por outro termo.</p>
+                </div>
+                <div class="content-grid" id="searchGrid"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
