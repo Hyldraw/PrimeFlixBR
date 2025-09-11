@@ -1,287 +1,298 @@
 <!DOCTYPE html>
-<!-- Código convertido de client/src/components/StreamingApp.tsx e client/index.html -->
-<html lang="pt-BR">
+<!-- Convertido de client/index.html e client/src/components/StreamingApp.tsx -->
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamFlix</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Lucide icons CDN para substituir os ícones importados -->
+    <!-- Lucide icons CDN para substituir imports do React -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <title>StreamFlix</title>
 </head>
 <body>
     <div id="root">
-        <!-- Main app container -->
-        <div id="streaming-app" class="min-h-screen bg-gradient-to-br from-background via-blue-900/10 to-blue-700/10 text-foreground pb-24">
+        <!-- Wrapper principal convertido de App.tsx -->
+        <div class="min-h-screen bg-background text-foreground">
+            <!-- Toaster placeholder -->
+            <div id="toast-container"></div>
             
-            <!-- Search View (initially hidden) -->
-            <div id="search-view" class="min-h-screen bg-gradient-to-br from-background via-purple-900/10 to-blue-900/10 text-foreground" style="display: none;">
-                <!-- Search Header -->
-                <div class="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-gradient-to-r from-purple-500/20 to-blue-500/20 p-4">
-                    <div class="flex items-center space-x-4">
-                        <button 
-                            id="button-back-search"
-                            class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-full transition-colors"
-                            data-testid="button-back-search"
-                        >
-                            <i data-lucide="arrow-left" class="w-6 h-6"></i>
-                            <span>Voltar</span>
-                        </button>
-                        <div class="flex-1 relative">
-                            <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
-                            <input
-                                type="text"
-                                id="search-input"
-                                placeholder="Buscar filmes e séries..."
-                                class="w-full pl-12 pr-4 py-4 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all text-lg"
-                                autofocus
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search Results -->
-                <div class="p-6">
-                    <div id="search-results-container"></div>
-                    <div id="search-empty-state" class="text-center py-20" style="display: none;">
-                        <i data-lucide="search" class="mx-auto mb-6 text-purple-500/50 w-20 h-20"></i>
-                        <h3 class="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Descubra seu próximo filme ou série
-                        </h3>
-                        <p class="text-gray-400 text-lg">Digite algo no campo acima para começar</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Details View (initially hidden) -->
-            <div id="details-view" class="min-h-screen bg-background text-foreground" style="display: none;">
-                <div class="relative min-h-screen">
-                    <div id="details-background" class="absolute inset-0 bg-cover bg-center">
-                        <div class="absolute inset-0 details-gradient"></div>
-                    </div>
-
-                    <button 
-                        id="button-back"
-                        class="absolute top-6 left-6 z-20 flex items-center space-x-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-black/80 transition-colors"
-                        data-testid="button-back"
-                    >
-                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                        <span>Voltar</span>
-                    </button>
-
-                    <!-- Classification badge in top-right corner -->
-                    <div class="absolute top-6 right-6 z-20">
-                        <span id="details-classification" class="px-3 py-2 rounded-full text-white font-bold"></span>
-                    </div>
-
-                    <div class="relative z-10 min-h-screen px-6 md:px-12 pt-20 pb-12">
-                        <!-- Seção de Cabeçalho com Poster e Título -->
-                        <div class="flex items-start gap-6 mb-8">
-                            <!-- Poster pequeno ao lado esquerdo -->
-                            <div class="flex-shrink-0">
-                                <div class="w-32 h-48 rounded-lg overflow-hidden bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 backdrop-blur-sm shadow-xl">
-                                    <img
-                                        id="details-poster"
-                                        class="w-full h-full object-cover"
-                                        data-testid="img-poster-details"
+            <!-- Router placeholder - sempre mostra Home que contém StreamingApp -->
+            <div id="home-page">
+                <!-- StreamingApp convertido de client/src/components/StreamingApp.tsx -->
+                <div id="streaming-app" class="min-h-screen bg-gradient-to-br from-background via-blue-900/10 to-blue-700/10 text-foreground pb-24">
+                    
+                    <!-- Search View -->
+                    <div id="search-view" class="min-h-screen bg-gradient-to-br from-background via-purple-900/10 to-blue-900/10 text-foreground" style="display: none;">
+                        <!-- Search Header -->
+                        <div class="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-gradient-to-r from-purple-500/20 to-blue-500/20 p-4">
+                            <div class="flex items-center space-x-4">
+                                <button 
+                                    id="button-back-search"
+                                    class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-full transition-colors"
+                                    data-testid="button-back-search"
+                                >
+                                    <svg class="w-6 h-6" data-lucide="arrow-left"></svg>
+                                    <span>Voltar</span>
+                                </button>
+                                <div class="flex-1 relative">
+                                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" data-lucide="search"></svg>
+                                    <input
+                                        type="text"
+                                        id="search-input"
+                                        placeholder="Buscar filmes e séries..."
+                                        class="w-full pl-12 pr-4 py-4 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all text-lg"
+                                        autofocus
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Informações principais -->
-                            <div class="flex-1 space-y-4">
-                                <h1 id="details-title" class="text-3xl md:text-5xl font-bold text-shadow" data-testid="text-title"></h1>
+                        <!-- Search Results -->
+                        <div class="p-6">
+                            <div id="search-results-container"></div>
+                            <div id="search-empty-state" class="text-center py-20" style="display: none;">
+                                <svg class="mx-auto mb-6 text-purple-500/50 w-20 h-20" data-lucide="search"></svg>
+                                <h3 class="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                                    Descubra seu próximo filme ou série
+                                </h3>
+                                <p class="text-gray-400 text-lg">Digite algo no campo acima para começar</p>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div id="details-meta" class="flex flex-wrap items-center gap-3 text-sm"></div>
+                    <!-- Details View -->
+                    <div id="details-view" class="min-h-screen bg-background text-foreground" style="display: none;">
+                        <div class="relative min-h-screen">
+                            <div id="details-background" class="absolute inset-0 bg-cover bg-center">
+                                <div class="absolute inset-0 details-gradient"></div>
+                            </div>
 
-                                <div class="flex flex-col sm:flex-row gap-3">
-                                    <button 
-                                        id="button-watch"
-                                        class="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:scale-105 flex-1"
-                                        data-testid="button-watch"
-                                    >
-                                        <i data-lucide="play" class="w-5 h-5"></i>
-                                        <span>Assistir Agora</span>
-                                    </button>
-                                    <button 
-                                        id="button-favorite"
-                                        class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:scale-105 flex-1 bg-gray-600/80 backdrop-blur-sm hover:bg-gray-600 text-white"
-                                        data-testid="button-favorite"
-                                    >
-                                        <i data-lucide="heart" class="w-5 h-5"></i>
-                                        <span>Favoritar</span>
-                                    </button>
+                            <button 
+                                id="button-back"
+                                class="absolute top-6 left-6 z-20 flex items-center space-x-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-black/80 transition-colors"
+                                data-testid="button-back"
+                            >
+                                <svg class="w-5 h-5" data-lucide="arrow-left"></svg>
+                                <span>Voltar</span>
+                            </button>
+
+                            <!-- Classification badge in top-right corner -->
+                            <div class="absolute top-6 right-6 z-20">
+                                <span id="details-classification" class="px-3 py-2 rounded-full text-white font-bold"></span>
+                            </div>
+
+                            <div class="relative z-10 min-h-screen px-6 md:px-12 pt-20 pb-12">
+                                <!-- Seção de Cabeçalho com Poster e Título -->
+                                <div class="flex items-start gap-6 mb-8">
+                                    <!-- Poster pequeno ao lado esquerdo -->
+                                    <div class="flex-shrink-0">
+                                        <div class="w-32 h-48 rounded-lg overflow-hidden bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 backdrop-blur-sm shadow-xl">
+                                            <img
+                                                id="details-poster"
+                                                class="w-full h-full object-cover"
+                                                data-testid="img-poster-details"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <!-- Informações principais -->
+                                    <div class="flex-1 space-y-4">
+                                        <h1 id="details-title" class="text-3xl md:text-5xl font-bold text-shadow" data-testid="text-title"></h1>
+
+                                        <div id="details-meta" class="flex flex-wrap items-center gap-3 text-sm"></div>
+
+                                        <div class="flex flex-col sm:flex-row gap-3">
+                                            <button 
+                                                id="button-watch"
+                                                class="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:scale-105 flex-1"
+                                                data-testid="button-watch"
+                                            >
+                                                <svg class="w-5 h-5" data-lucide="play"></svg>
+                                                <span>Assistir Agora</span>
+                                            </button>
+                                            <button 
+                                                id="button-favorite"
+                                                class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:scale-105 flex-1 bg-gray-600/80 backdrop-blur-sm hover:bg-gray-600 text-white"
+                                                data-testid="button-favorite"
+                                            >
+                                                <svg class="w-5 h-5" data-lucide="heart"></svg>
+                                                <span>Favoritar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Seção de Sinopse -->
+                                <div class="mb-8">
+                                    <h3 id="details-synopsis-header" class="text-2xl font-semibold mb-4 text-white"></h3>
+                                    <p id="details-description" class="text-lg text-gray-300 leading-relaxed max-w-4xl" data-testid="text-description"></p>
+                                </div>
+
+                                <!-- Informações Adicionais -->
+                                <div class="space-y-8">
+                                    <!-- Inline Player -->
+                                    <div id="inline-player-container" class="mb-8 border-b border-gray-700/50 pb-8" style="display: none;">
+                                        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
+                                            <button 
+                                                id="button-close-inline-player"
+                                                class="absolute top-4 right-4 z-10 w-10 h-10 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+                                            >
+                                                <svg class="w-5 h-5 text-white" data-lucide="x"></svg>
+                                            </button>
+                                            <iframe
+                                                id="inline-player-iframe"
+                                                class="w-full h-full"
+                                                frameBorder="0"
+                                                allow="autoplay; encrypted-media; picture-in-picture"
+                                                allowFullScreen
+                                                scrolling="no"
+                                                style="border: 0; border-radius: 16px"
+                                            ></iframe>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-b border-gray-700/50 pb-8">
+                                        <h3 class="text-2xl font-semibold mb-6 text-white">Elenco</h3>
+                                        <div class="overflow-x-auto content-scroll">
+                                            <div id="details-cast" class="flex items-center gap-4 text-white min-w-max pb-2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Home View -->
+                    <div id="home-view">
+                        <!-- Hero Section -->
+                        <div id="hero-section" class="relative h-[70vh] lg:h-[85vh] overflow-hidden fade-in">
+                            <div id="hero-background" class="absolute inset-0 bg-cover bg-center transition-all duration-1000">
+                                <div class="absolute inset-0 hero-gradient-enhanced"></div>
+                            </div>
+
+                            <div class="relative z-10 flex items-center h-full px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+                                <div class="max-w-4xl hero-text-animation">
+                                    <h2 id="hero-title" class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent" data-testid="text-hero-title"></h2>
+                                    <div id="hero-meta" class="flex flex-wrap items-center gap-4 mb-6 text-base slide-up"></div>
+                                    <p id="hero-description" class="text-gray-200 mb-8 text-base md:text-lg leading-relaxed max-w-3xl slide-up" data-testid="text-hero-description"></p>
+                                    <div class="flex flex-wrap gap-4 slide-up mb-8">
+                                        <button 
+                                            id="hero-details-button"
+                                            class="flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all shadow-xl hover:scale-105"
+                                        >
+                                            <svg class="w-6 h-6" data-lucide="info"></svg>
+                                            <span>Mais Informações</span>
+                                        </button>
+                                        <button 
+                                            id="hero-play-button"
+                                            class="flex items-center space-x-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all border border-white/30 hover:border-white/50"
+                                        >
+                                            <svg class="w-6 h-6" data-lucide="play"></svg>
+                                            <span>Assistir Agora</span>
+                                        </button>
+                                    </div>
+                                    <!-- Progress bar for auto-rotation -->
+                                    <div class="w-full max-w-md bg-white/20 rounded-full h-1 overflow-hidden">
+                                        <div id="hero-progress" class="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Seção de Sinopse -->
-                        <div class="mb-8">
-                            <h3 id="details-synopsis-header" class="text-2xl font-semibold mb-4 text-white"></h3>
-                            <p id="details-description" class="text-lg text-gray-300 leading-relaxed max-w-4xl" data-testid="text-description"></p>
-                        </div>
-
-                        <!-- Informações Adicionais -->
+                        <!-- Content Sections -->
                         <div class="space-y-8">
-                            <!-- Inline Player -->
-                            <div id="inline-player-container" class="mb-8 border-b border-gray-700/50 pb-8" style="display: none;">
-                                <div class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
-                                    <button 
-                                        id="button-close-inline-player"
-                                        class="absolute top-4 right-4 z-10 w-10 h-10 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-                                    >
-                                        <i data-lucide="x" class="w-5 h-5 text-white"></i>
-                                    </button>
-                                    <iframe
-                                        id="inline-player-iframe"
-                                        class="w-full h-full"
-                                        frameBorder="0"
-                                        allow="autoplay; encrypted-media; picture-in-picture"
-                                        allowFullScreen
-                                        scrolling="no"
-                                        style="border: 0; border-radius: 16px"
-                                    ></iframe>
-                                </div>
-                            </div>
-
-                            <div class="border-b border-gray-700/50 pb-8">
-                                <h3 class="text-2xl font-semibold mb-6 text-white">Elenco</h3>
+                            <!-- Featured Content Section -->
+                            <div id="featured-section" class="px-4 sm:px-6 lg:px-8">
+                                <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                                    ✨ Em Destaque
+                                </h3>
                                 <div class="overflow-x-auto content-scroll">
-                                    <div id="details-cast" class="flex items-center gap-4 text-white min-w-max pb-2"></div>
+                                    <div id="featured-content" class="flex space-x-6 pb-4"></div>
+                                </div>
+                            </div>
+
+                            <!-- Movies Section -->
+                            <div id="movies-section" class="px-4 sm:px-6 lg:px-8">
+                                <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                                    🎬 Filmes
+                                </h3>
+                                <div class="overflow-x-auto content-scroll">
+                                    <div id="movies-content" class="flex space-x-6 pb-4"></div>
+                                </div>
+                            </div>
+
+                            <!-- Series Section -->
+                            <div id="series-section" class="px-4 sm:px-6 lg:px-8">
+                                <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                                    📺 Séries
+                                </h3>
+                                <div class="overflow-x-auto content-scroll">
+                                    <div id="series-content" class="flex space-x-6 pb-4"></div>
+                                </div>
+                            </div>
+
+                            <!-- My List Section -->
+                            <div id="mylist-section" class="px-4 sm:px-6 lg:px-8">
+                                <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                                    ❤️ Minha Lista
+                                </h3>
+                                <div class="overflow-x-auto content-scroll">
+                                    <div id="mylist-content" class="flex space-x-6 pb-4"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Navigation -->
+                        <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md mx-auto z-30 mobile-nav-floating">
+                            <div class="bg-black/90 backdrop-blur-xl rounded-t-3xl border border-gray-800/50 px-6 py-4 bottom-nav-shadow-enhanced">
+                                <div class="flex justify-center items-center space-x-8">
+                                    <button id="nav-home" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10 active">
+                                        <svg class="w-6 h-6" data-lucide="home"></svg>
+                                        <span class="text-xs font-semibold">Início</span>
+                                    </button>
+                                    <button id="nav-search" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
+                                        <svg class="w-6 h-6" data-lucide="search"></svg>
+                                        <span class="text-xs font-semibold">Buscar</span>
+                                    </button>
+                                    <button id="nav-movies" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
+                                        <svg class="w-6 h-6" data-lucide="film"></svg>
+                                        <span class="text-xs font-semibold">Filmes</span>
+                                    </button>
+                                    <button id="nav-series" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
+                                        <svg class="w-6 h-6" data-lucide="tv"></svg>
+                                        <span class="text-xs font-semibold">Séries</span>
+                                    </button>
+                                    <button id="nav-mylist" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
+                                        <svg class="w-6 h-6" data-lucide="heart"></svg>
+                                        <span class="text-xs font-semibold">Minha Lista</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Home View -->
-            <div id="home-view">
-                <!-- Hero Section -->
-                <div id="hero-section" class="relative h-[70vh] lg:h-[85vh] overflow-hidden fade-in">
-                    <div id="hero-background" class="absolute inset-0 bg-cover bg-center transition-all duration-1000">
-                        <div class="absolute inset-0 hero-gradient-enhanced"></div>
-                    </div>
-
-                    <div class="relative z-10 flex items-center h-full px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-                        <div class="max-w-4xl hero-text-animation">
-                            <h2 id="hero-title" class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent" data-testid="text-hero-title"></h2>
-                            <div id="hero-meta" class="flex flex-wrap items-center gap-4 mb-6 text-base slide-up"></div>
-                            <p id="hero-description" class="text-gray-200 mb-8 text-base md:text-lg leading-relaxed max-w-3xl slide-up" data-testid="text-hero-description"></p>
-                            <div class="flex flex-wrap gap-4 slide-up mb-8">
-                                <button 
-                                    id="hero-details-button"
-                                    class="flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all shadow-xl hover:scale-105"
-                                >
-                                    <i data-lucide="info" class="w-6 h-6"></i>
-                                    <span>Mais Informações</span>
-                                </button>
-                                <button 
-                                    id="hero-play-button"
-                                    class="flex items-center space-x-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all border border-white/30 hover:border-white/50"
-                                >
-                                    <i data-lucide="play" class="w-6 h-6"></i>
-                                    <span>Assistir Agora</span>
-                                </button>
-                            </div>
-                            <!-- Progress bar for auto-rotation -->
-                            <div class="w-full max-w-md bg-white/20 rounded-full h-1 overflow-hidden">
-                                <div id="hero-progress" class="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
-                            </div>
+                    <!-- Player Modal -->
+                    <div id="player-modal" class="fixed inset-0 bg-black z-50 flex items-center justify-center" style="display: none;">
+                        <button 
+                            id="button-close-player"
+                            class="absolute top-6 right-6 z-10 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+                            data-testid="button-close-player"
+                        >
+                            <svg class="w-6 h-6 text-white" data-lucide="x"></svg>
+                        </button>
+                        <div class="w-full max-w-7xl mx-4 aspect-video">
+                            <iframe
+                                id="player-iframe"
+                                class="w-full h-full rounded-lg"
+                                frameBorder="0"
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                            ></iframe>
                         </div>
                     </div>
-                </div>
-
-                <!-- Content Sections -->
-                <div class="space-y-8">
-                    <!-- Featured Content Section -->
-                    <div id="featured-section" class="px-4 sm:px-6 lg:px-8">
-                        <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            ✨ Em Destaque
-                        </h3>
-                        <div class="overflow-x-auto content-scroll">
-                            <div id="featured-content" class="flex space-x-6 pb-4"></div>
-                        </div>
-                    </div>
-
-                    <!-- Movies Section -->
-                    <div id="movies-section" class="px-4 sm:px-6 lg:px-8">
-                        <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                            🎬 Filmes
-                        </h3>
-                        <div class="overflow-x-auto content-scroll">
-                            <div id="movies-content" class="flex space-x-6 pb-4"></div>
-                        </div>
-                    </div>
-
-                    <!-- Series Section -->
-                    <div id="series-section" class="px-4 sm:px-6 lg:px-8">
-                        <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                            📺 Séries
-                        </h3>
-                        <div class="overflow-x-auto content-scroll">
-                            <div id="series-content" class="flex space-x-6 pb-4"></div>
-                        </div>
-                    </div>
-
-                    <!-- My List Section -->
-                    <div id="mylist-section" class="px-4 sm:px-6 lg:px-8">
-                        <h3 class="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
-                            ❤️ Minha Lista
-                        </h3>
-                        <div class="overflow-x-auto content-scroll">
-                            <div id="mylist-content" class="flex space-x-6 pb-4"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Navigation -->
-                <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md mx-auto z-30 mobile-nav-floating">
-                    <div class="bg-black/90 backdrop-blur-xl rounded-t-3xl border border-gray-800/50 px-6 py-4 bottom-nav-shadow-enhanced">
-                        <div class="flex justify-center items-center space-x-8">
-                            <button id="nav-home" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10 active">
-                                <i data-lucide="home" class="w-6 h-6"></i>
-                                <span class="text-xs font-semibold">Início</span>
-                            </button>
-                            <button id="nav-search" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
-                                <i data-lucide="search" class="w-6 h-6"></i>
-                                <span class="text-xs font-semibold">Buscar</span>
-                            </button>
-                            <button id="nav-movies" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
-                                <i data-lucide="film" class="w-6 h-6"></i>
-                                <span class="text-xs font-semibold">Filmes</span>
-                            </button>
-                            <button id="nav-series" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
-                                <i data-lucide="tv" class="w-6 h-6"></i>
-                                <span class="text-xs font-semibold">Séries</span>
-                            </button>
-                            <button id="nav-mylist" class="nav-button flex flex-col items-center space-y-2 transition-all duration-300 p-2 rounded-xl hover:bg-white/10">
-                                <i data-lucide="heart" class="w-6 h-6"></i>
-                                <span class="text-xs font-semibold">Minha Lista</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Player Modal (initially hidden) -->
-            <div id="player-modal" class="fixed inset-0 bg-black z-50 flex items-center justify-center" style="display: none;">
-                <button 
-                    id="button-close-player"
-                    class="absolute top-6 right-6 z-10 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-                    data-testid="button-close-player"
-                >
-                    <i data-lucide="x" class="w-6 h-6 text-white"></i>
-                </button>
-                <div class="w-full max-w-7xl mx-4 aspect-video">
-                    <iframe
-                        id="player-iframe"
-                        class="w-full h-full rounded-lg"
-                        frameBorder="0"
-                        allow="autoplay; encrypted-media"
-                        allowFullScreen
-                    ></iframe>
                 </div>
             </div>
         </div>
@@ -289,8 +300,12 @@
 
     <script src="script.js"></script>
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        // Initialize Lucide icons after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
     </script>
 </body>
 </html>
