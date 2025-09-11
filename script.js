@@ -1,4 +1,4 @@
-// Código convertido de client/src/components/StreamingApp.tsx, client/src/hooks/use-local-images.ts e client/src/lib/queryClient.ts
+// Convertido de client/src/components/StreamingApp.tsx, server/storage.ts, client/src/lib/queryClient.ts, client/src/hooks/use-local-images.ts
 
 // Estado global da aplicação - convertido dos useState hooks do React
 let selectedContent = null;
@@ -21,22 +21,447 @@ let seriesCategories = [
 let touchStart = 0;
 let touchEnd = 0;
 
-// Dados - substituindo React Query
-let allContent = [];
-let featuredContent = [];
-let userListContent = [];
-let searchResults = [];
+// Estado do inline player
+let showInlinePlayer = false;
 
 // Progresso da auto-rotação
 let progress = 0;
 let progressInterval = null;
 let contentInterval = null;
 
-// Estado do inline player
-let showInlinePlayer = false;
+// Dados de conteúdo - convertidos de server/storage.ts
+let allContent = [];
+let featuredContent = [];
+let userListContent = [];
+let searchResults = [];
 
-// Cache simples para substituir React Query
-const cache = new Map();
+// User data (simulando usuário demo)
+let currentUser = { id: "demo-user", username: "demo", password: "demo" };
+let userLists = [];
+
+// Função para gerar embed baseado no tipo e ID - preservada de server/storage.ts
+function generateEmbed(id, type) {
+  const baseUrl = 'https://embed.warezcdn.link';
+  if (type === 'movie') {
+    return `${baseUrl}/filme/${id}`;
+  } else {
+    return `${baseUrl}/serie/${id}`;
+  }
+}
+
+// Sample content data - preservado integralmente de server/storage.ts
+const sampleContent = [
+  {
+    id: "tt3402138",
+    title: "Corra Que a Polícia Vem Aí!",
+    year: 2025,
+    rating: "6.7",
+    duration: "85 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ação",
+    classification: "14+",
+    directors: [
+      { name: "Akiva Schaffer", photo: "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/1Om7CQXHoUr4rrVrsmyutDwWfck.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Liam Neeson", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/sRLev3wJioBgun3ZoeAUFpkLy0D.jpg" },
+      { name: "Pamela Anderson", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/sk15ch2IQ6k6vWu07Jr77yw4oj5.jpg" },
+      { name: "Paul Walter Hauser", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/hV2oiKF2xlDMXtuq3Si1TA4b6DA.jpg" }
+    ],
+    description: "Apenas um homem tem as habilidades necessárias para liderar o Esquadrão Policial e salvar o mundo.",
+    fullDescription: "O filme acompanha o Tenente Frank Drebin Jr. (interpretado por Liam Neeson), o filho do lendário e falecido Tenente Frank Drebin. Após a morte do pai, Drebin Jr. segue seus passos na polícia, mas também herda sua peculiar forma de lidar com as situações.",
+    poster: "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/aGnR0XntfMrlrbnVyPL8XOKAkAQ.jpg",
+    backdrop: "https://img.cnmhstng.com/more/backdrop/lg/The_Naked_Gun8081.jpg",
+    embed: generateEmbed("tt3402138", "movie"),
+    featured: true,
+    type: "movie"
+  },
+  {
+    id: "tt5950044",
+    title: "Superman",
+    year: 2025,
+    rating: "7.2",
+    duration: "129 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ação",
+    classification: "14+",
+    directors: [
+      { name: "James Gunn", photo: "https://m.media-amazon.com/images/M/MV5BMTYxMDgzMjA5OV5BMl5BanBnXkFtZTcwMzMwMTUxNw@@._V1_FMjpg_UX1000_.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "David Corenswet", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/qB0hBMu4wU1nPrqtdUQP3sQeN5t.jpg" },
+      { name: "Rachel Brosnahan", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/1f9NK43gWrXN2uMmYMlennB7jCC.jpg" },
+      { name: "Nicholas Hoult", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/laeAYQVBV9U3DkJ1B4Cn1XhpT8P.jpg" }
+    ],
+    description: "Segue o super-herói titular enquanto ele reconcilia sua herança com sua educação humana. Ele é a personificação da verdade, da justiça e de um futuro melhor em um mundo que vê a bondade como algo antiquado.",
+    fullDescription: "Segue o super-herói titular enquanto ele reconcilia sua herança com sua educação humana. Ele é a personificação da verdade, da justiça e de um futuro melhor em um mundo que vê a bondade como algo antiquado.",
+    poster: "https://i.imgur.com/bZo3fGv.jpeg",
+    backdrop: "https://i.imgur.com/vjQLuTI.jpeg",
+    embed: generateEmbed("tt5950044", "movie"),
+    featured: true,
+    type: "movie"
+  },
+  {
+    id: "tt1630029",
+    title: "Avatar: O Caminho da Água",
+    year: 2022,
+    rating: "8.1",
+    duration: "192 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ficção Científica",
+    classification: "12+",
+    directors: [
+      { name: "James Cameron", photo: "https://image.tmdb.org/t/p/w200/5tKTaVlBiqfTL9dZQ2Izn7kSGsf.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Sam Worthington", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/mflBcox36s9ZPVOuhf6axaJ.jpg" },
+      { name: "Zoe Saldana", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/vQBwmsSOAd0JDaEcZ5p43J9xzsY.jpg" },
+      { name: "Sigourney Weaver", photo: "https://media.themoviedb.org/t/p/w138_and_h175_face/wTSnfktNBLd6kwQxgvkqYw6vEon.jpg" }
+    ],
+    description: "Jake Sully vive com sua nova família formada no planeta de Pandora. Quando uma ameaça familiar retorna para terminar o que foi iniciado anteriormente, Jake deve trabalhar com Neytiri e o exército da raça Na'vi para proteger seu planeta.",
+    fullDescription: "Mais de uma década depois dos eventos do primeiro filme, Avatar: O Caminho da Água conta a história da família Sully (Jake, Neytiri e seus filhos), os problemas que os perseguem, até onde vão para se manter em segurança, as batalhas que lutam para se manter vivos e as tragédias que suportam. Ambientado no mundo deslumbrante de Pandora, James Cameron leva o público numa jornada emocionante e de tirar o fôlego.",
+    poster: "https://lumiere-a.akamaihd.net/v1/images/image_1c148dd1.jpeg?region=0,0,540,810",
+    backdrop: "https://sm.ign.com/ign_pt/gallery/e/every-acto/every-actor-and-character-confirmed-for-the-avatar-sequels_ua72.jpg",
+    embed: generateEmbed("tt1630029", "movie"),
+    featured: false,
+    type: "movie"
+  },
+  {
+    id: "tt1745960",
+    title: "Top Gun: Maverick",
+    year: 2022,
+    rating: "8.5",
+    duration: "131 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ação",
+    classification: "14+",
+    directors: [
+      { name: "Joseph Kosinski", photo: "https://image.tmdb.org/t/p/w200/6l2ZjSGtNWmHbpOTaXy9nVUwkUx.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Tom Cruise", photo: "https://image.tmdb.org/t/p/w200/eOh4ubpOm2Igdg0QH2ghj0mFtC.jpg" },
+      { name: "Miles Teller", photo: "https://image.tmdb.org/t/p/w200/tkJ42CSwWKLGhUn0zJpwSywCKnD.jpg" },
+      { name: "Jennifer Connelly", photo: "https://image.tmdb.org/t/p/w200/bpILtSl6z5xc6YOAiPnDBlXDYMJ.jpg" }
+    ],
+    description: "Depois de mais de 30 anos de serviço como um dos principais aviadores da Marinha, Pete 'Maverick' Mitchell está de volta, rompendo os limites como um piloto de testes corajoso.",
+    fullDescription: "Depois de mais de 30 anos de serviço como um dos principais aviadores da Marinha, Pete 'Maverick' Mitchell está de volta, rompendo os limites como um piloto de testes corajoso e esquivando-se do avanço de patente que o colocaria em terra. Treinando graduados da TOPGUN para uma missão especializada, diferente de qualquer coisa que um piloto vivo já viu, Maverick encontra Bradley Rooster Bradshaw, filho de seu falecido amigo Nick Goose Bradshaw.",
+    poster: "https://m.media-amazon.com/images/M/MV5BMDBkZDNjMWEtOTdmMi00NmExLTg5MmMtNTFlYTJlNWY5YTdmXkEyXkFqcGc@._V1_.jpg",
+    backdrop: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpbl3qjKWjpCK40o2uXV4mVLtl7Fz8s5UV2A&s",
+    embed: generateEmbed("tt1745960", "movie"),
+    featured: false,
+    type: "movie"
+  },
+  {
+    id: "tt1160419",
+    title: "Duna",
+    year: 2021,
+    rating: "8.0",
+    duration: "155 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ficção Científica",
+    classification: "14+",
+    directors: [
+      { name: "Denis Villeneuve", photo: "https://image.tmdb.org/t/p/w200/7pV3kOQgFSptm3kEZPXR1Nohpqw.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Timothée Chalamet", photo: "https://image.tmdb.org/t/p/w200/BE2sdjpgsa2rNTFa66f7upUP8DW.jpg" },
+      { name: "Rebecca Ferguson", photo: "https://image.tmdb.org/t/p/w200/lJloTOheuQSirSLXLTKmraWJuQ8.jpg" },
+      { name: "Oscar Isaac", photo: "https://image.tmdb.org/t/p/w200/dW5U5yrIIPmMjRThR9KT2xH6nTz.jpg" }
+    ],
+    description: "Paul Atreides, um jovem brilhante e talentoso nascido com um grande destino além de sua compreensão, deve viajar para o planeta mais perigoso do universo para garantir o futuro de sua família e seu povo.",
+    fullDescription: "Duna conta a história de Paul Atreides, um jovem brilhante e talentoso nascido com um grande destino além de sua compreensão, que deve viajar para o planeta mais perigoso do universo para garantir o futuro de sua família e seu povo. Quando forças malévolas explodem em conflito sobre o suprimento exclusivo do planeta da substância mais preciosa existente, apenas aqueles que podem conquistar seus medos sobreviverão.",
+    poster: "https://upload.wikimedia.org/wikipedia/pt/thumb/a/a3/Dune_2021.jpeg/250px-Dune_2021.jpeg",
+    backdrop: "https://isabelaboscov.com/wp-content/uploads/2021/10/duna_feat.jpg",
+    embed: generateEmbed("tt1160419", "movie"),
+    featured: false,
+    type: "movie"
+  },
+  {
+    id: "tt9114286",
+    title: "Pantera Negra: Wakanda Para Sempre",
+    year: 2022,
+    rating: "7.8",
+    duration: "161 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ação",
+    classification: "12+",
+    directors: [
+      { name: "Ryan Coogler", photo: "https://image.tmdb.org/t/p/w200/x3IKKjl0Vq5TXcn1f2Aq3YcIeG.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Letitia Wright", photo: "https://image.tmdb.org/t/p/w200/jsHJWQ7xw2u4E3K3Q3ysNf4fZXi.jpg" },
+      { name: "Angela Bassett", photo: "https://image.tmdb.org/t/p/w200/upRJOPRpJj7a41DVjG4WRaPXtJ6.jpg" },
+      { name: "Tenoch Huerta", photo: "https://image.tmdb.org/t/p/w200/4zH1VOKjuKdpXlcl3M7v7FGVJ0r.jpg" }
+    ],
+    description: "A rainha Ramonda, Shuri, M'Baku, Okoye e as Dora Milaje lutam para proteger sua nação das potências mundiais intervenientes após a morte do rei T'Challa.",
+    fullDescription: "A rainha Ramonda, Shuri, M'Baku, Okoye e as Dora Milaje lutam para proteger sua nação das potências mundiais que intervêm após a morte do rei T'Challa. Quando Namor, rei de uma nação subaquática escondida, ameaça Wakanda, os heróis devem forjar um novo caminho para o reino de Wakanda. Apresentando Ironheart, aliada de longa data dos Vingadores e Wakanda.",
+    poster: "https://upload.wikimedia.org/wikipedia/pt/3/3b/Black_Panther_Wakanda_Forever_poster.jpg",
+    backdrop: "https://igormiranda.com.br/wp-content/uploads/2022/10/pantera-negra-wakanda-para-sempre-poster.jpg",
+    embed: generateEmbed("tt9114286", "movie"),
+    featured: false,
+    type: "movie"
+  },
+  {
+    id: "tt5180504",
+    title: "The Witcher",
+    year: 2019,
+    rating: "8.2",
+    duration: null,
+    seasons: 3,
+    episodes: 24,
+    genre: "Fantasia",
+    classification: "16+",
+    directors: null,
+    creator: "Lauren Schmidt",
+    creatorImage: "https://image.tmdb.org/t/p/w200/3XKs4VCu0xP7g4BKSfnrpqHwfnS.jpg",
+    cast: [
+      { name: "Henry Cavill", photo: "https://image.tmdb.org/t/p/w200/2p62i8nJry6rNPGa3sDTjZEJftu.jpg" },
+      { name: "Anya Chalotra", photo: "https://image.tmdb.org/t/p/w200/oWsVqiT3oLn6VGLwbLMTpU39CJH.jpg" },
+      { name: "Freya Allan", photo: "https://image.tmdb.org/t/p/w200/8RqXxOCZKowrUpUfVzqLOKY0j7R.jpg" }
+    ],
+    description: "Geralt de Rivia, um caçador de monstros solitário, luta para encontrar seu lugar em um mundo onde as pessoas frequentemente se mostram mais perversas que as bestas.",
+    fullDescription: "Baseada na série de livros best-seller, The Witcher é uma saga épica sobre família e destino. É a história de três pessoas cujos destinos estão ligados no vasto mundo do Continente, onde humanos, elfos, halflings, gnomos e monstros batalham para sobreviver e prosperar, e onde o bem e o mal não são facilmente identificados.",
+    poster: "https://m.media-amazon.com/images/M/MV5BMTQ5MDU5MTktMDZkMy00NDU1LWIxM2UtODg5OGFiNmRhNDBjXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    backdrop: "https://occ-0-8407-114.1.nflxso.net/dnm/api/v6/Z-WHgqd_TeJxSuha8aZ5WpyLcX8/AAAABU7gpMAYfvyueawBTChK__g2nos9dYiy4OW7GztXMmRA5gyDCLovfugu5n_mSxXJPNaiHgNPIg3hLLuOqtIBFvfX9htxXvCpYDaT.jpg?r=3ec",
+    embed: generateEmbed("tt5180504", "series"),
+    featured: false,
+    type: "series"
+  },
+  {
+    id: "tt4574334",
+    title: "Stranger Things",
+    year: 2016,
+    rating: "8.7",
+    duration: null,
+    seasons: 4,
+    episodes: 42,
+    genre: "Ficção Científica",
+    classification: "14+",
+    directors: null,
+    creator: "Irmãos Duffer",
+    creatorImage: "https://image.tmdb.org/t/p/w200/rAiKKKYcHfEW4xRQmZU6sXWeRlO.jpg",
+    cast: [
+      { name: "Millie Bobby Brown", photo: "https://image.tmdb.org/t/p/w200/1fLEy84obQrN5dfUKBFNPmnxEqF.jpg" },
+      { name: "Finn Wolfhard", photo: "https://image.tmdb.org/t/p/w200/pPQd6nF1KqwJm2k4vK1UOx5rFr5.jpg" },
+      { name: "David Harbour", photo: "https://image.tmdb.org/t/p/w200/oXSu7yMEJVfxbJFJ2cDGwG6D7wI.jpg" }
+    ],
+    description: "Quando um garoto desaparece, sua mãe, um chefe de polícia e seus amigos devem confrontar forças aterrorizantes para trazê-lo de volta.",
+    fullDescription: "Em 1980, na cidade fictícia de Hawkins, Indiana, um grupo de amigos testemunha forças sobrenaturais e experimentos governamentais secretos. Para resolver esse mistério, eles terão que enfrentar seus piores medos e descobrir segredos sombrios. Stranger Things é uma carta de amor aos clássicos sobrenaturais dos anos 80.",
+    poster: "https://musicnonstop.uol.com.br/wp-content/uploads/2022/05/novo-poster-da-quarta-temporada-de-stranger-things-1652368177430_v2_3x4.jpg",
+    backdrop: "https://images.impresa.pt/expresso/2023-01-10-Stranger-Things-season-4-7542ce4.webp-efc1850f/original/mw-1920",
+    embed: generateEmbed("tt4574334", "series"),
+    featured: false,
+    type: "series"
+  },
+  {
+    id: "tt11198330",
+    title: "House of the Dragon",
+    year: 2022,
+    rating: "8.5",
+    duration: null,
+    seasons: 2,
+    episodes: 18,
+    genre: "Drama",
+    classification: "18+",
+    directors: null,
+    creator: "Ryan Condal",
+    creatorImage: "https://image.tmdb.org/t/p/w200/tUMhZ4VVWK5rj9F8Uj9OUl8DClF.jpg",
+    cast: [
+      { name: "Paddy Considine", photo: "https://image.tmdb.org/t/p/w200/kPaobfnkpwBAdBWp95fT2VfPJ0o.jpg" },
+      { name: "Emma D'Arcy", photo: "https://image.tmdb.org/t/p/w200/9P4RJOaG6FQpupZfBwfkX8sTGhM.jpg" },
+      { name: "Matt Smith", photo: "https://image.tmdb.org/t/p/w200/qbBnOEqJYH2zWnqJGUNZQYXZmT3.jpg" }
+    ],
+    description: "200 anos antes dos eventos de Game of Thrones, a Casa Targaryen está no auge de seu poder, com mais de 15 dragões sob seu comando.",
+    fullDescription: "Baseada no livro 'Fogo & Sangue' de George R.R. Martin, House of the Dragon se passa 200 anos antes dos eventos de Game of Thrones e conta a história dos Targaryen. A série se concentra na guerra civil targaryen conhecida como 'Dança dos Dragões', que ocorreu cerca de 300 anos antes dos eventos retratados em Game of Thrones.",
+    poster: "https://m.media-amazon.com/images/M/MV5BM2QzMGVkNjUtN2Y4Yi00ODMwLTg3YzktYzUxYjJlNjFjNDY1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    backdrop: "https://forbes.com.br/wp-content/uploads/2024/06/House-of-The-Dragon.png",
+    embed: generateEmbed("tt11198330", "series"),
+    featured: false,
+    type: "series"
+  },
+  {
+    id: "tt13443470",
+    title: "Wednesday",
+    year: 2022,
+    rating: "8.1",
+    duration: null,
+    seasons: 2,
+    episodes: 16,
+    genre: "Comédia",
+    classification: "14+",
+    directors: null,
+    creator: "Alfred Gough",
+    creatorImage: "https://image.tmdb.org/t/p/w200/5YkGLdPQY9lJpfLQx4LlmCGvhgX.jpg",
+    cast: [
+      { name: "Jenna Ortega", photo: "https://image.tmdb.org/t/p/w200/9I17Z4Oz8tDjfxINxlcJgGFW6Pl.jpg" },
+      { name: "Catherine Zeta-Jones", photo: "https://image.tmdb.org/t/p/w200/8c06Hl6X8kFCCKKMz4wKjBtNPKZ.jpg" },
+      { name: "Luis Guzmán", photo: "https://image.tmdb.org/t/p/w200/vbXJYCFnOUwsRhtRKgvHGVHUayx.jpg" }
+    ],
+    description: "Wednesday Addams é uma estudante na Nevermore Academy, onde tenta dominar sua habilidade psíquica emergente, impedir uma onda de assassinatos e resolver o mistério sobrenatural.",
+    fullDescription: "Uma série de mistério sobrenatural que segue Wednesday Addams em seus anos como estudante na Nevermore Academy. Wednesday tenta dominar sua habilidade psíquica emergente, frustrar um monstruoso surto de assassinatos que aterrorizou a cidade local, e resolver o mistério sobrenatural que envolveu seus pais há 25 anos - tudo enquanto navega em suas novas e muito emaranhadas relações na Nevermore.",
+    poster: "https://br.web.img2.acsta.net/pictures/22/09/23/20/14/0505071.jpg",
+    backdrop: "https://portaln10.com.br/todocanal/wp-content/uploads/2025/08/Criadores-de-Wandinha-vao-lancar-filme.png",
+    embed: generateEmbed("tt13443470", "series"),
+    featured: true,
+    type: "series"
+  },
+  {
+    id: "tt4154796",
+    title: "Vingadores: Ultimato",
+    year: 2019,
+    rating: "8.4",
+    duration: "181 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ação",
+    classification: "12+",
+    directors: [
+      { name: "Anthony Russo", photo: "https://image.tmdb.org/t/p/w200/bKBOdK8RiYrmhXXOyXH7tWcmwKJ.jpg" },
+      { name: "Joe Russo", photo: "https://image.tmdb.org/t/p/w200/bKBOdK8RiYrmhXXOyXH7tWcmwKJ.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Robert Downey Jr.", photo: "https://image.tmdb.org/t/p/w200/eOh4ubpOm2Igdg0QH2ghj0mFtC.jpg" },
+      { name: "Chris Evans", photo: "https://image.tmdb.org/t/p/w200/8kBZQG1WASRrDmNkm4iJ5CqPsP6.jpg" },
+      { name: "Mark Ruffalo", photo: "https://image.tmdb.org/t/p/w200/znNHyGbGOlojqQGqOgqGSqUoaF1.jpg" },
+      { name: "Chris Hemsworth", photo: "https://image.tmdb.org/t/p/w200/xkdGybW7sMKKXIj7yOm3wFOgKc2.jpg" }
+    ],
+    description: "Após Thanos eliminar metade de todas as formas de vida, os Vingadores restantes devem fazer qualquer coisa necessária para desfazer suas ações.",
+    fullDescription: "Após os eventos devastadores de Vingadores: Guerra Infinita, o universo está em ruínas devido aos esforços do Titã Louco, Thanos. Com a ajuda de aliados restantes, os Vingadores devem se reunir mais uma vez para desfazer as ações de Thanos e restaurar a ordem no universo de uma vez por todas, não importa quais sejam as consequências.",
+    poster: "https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg",
+    backdrop: "https://s2.glbimg.com/2C0hMRuCY_7NfDPjby4_Bjmq8Nc=/e.glbimg.com/og/ed/f/original/2018/03/22/avengers-infinity-war-official-poster-2018-4o.jpg",
+    embed: generateEmbed("tt4154796", "movie"),
+    featured: false,
+    type: "movie"
+  },
+  {
+    id: "tt0460681",
+    title: "Sobrenatural",
+    year: 2005,
+    rating: "8.4",
+    duration: null,
+    seasons: 15,
+    episodes: 327,
+    genre: "Sobrenatural",
+    classification: "16+",
+    directors: null,
+    creator: "Eric Kripke",
+    creatorImage: "https://image.tmdb.org/t/p/w200/3Y6agCgNpBzj8w5JZ9KsJfEXaJ6.jpg",
+    cast: [
+      { name: "Jared Padalecki", photo: "https://image.tmdb.org/t/p/w200/3DpAkgDuOeJt8m4ptXnBdyJUPGu.jpg" },
+      { name: "Jensen Ackles", photo: "https://image.tmdb.org/t/p/w200/lTt0wlAjnBKgDaUOEIMvxlBKdOd.jpg" },
+      { name: "Misha Collins", photo: "https://image.tmdb.org/t/p/w200/6QVT9rjFMjJCDKNiXpj9vISIJjU.jpg" }
+    ],
+    description: "Dois irmãos seguem o pai em uma jornada para encontrar e destruir criaturas sobrenaturais malignas.",
+    fullDescription: "Sobrenatural segue os irmãos Sam e Dean Winchester, que viajam pelo país caçando demônios, fantasmas, monstros e outras criaturas sobrenaturais. A série explora temas de família, sacrifício e a luta entre o bem e o mal, enquanto os irmãos enfrentam apocalipses, anjos, demônios e outras ameaças sobrenaturais.",
+    poster: "https://image.tmdb.org/t/p/w500/KoYWXbnYuS3b0GyQPkbuexlVK9.jpg",
+    backdrop: "https://www.correiobraziliense.com.br/cbradar/wp-content/uploads/2025/02/supernatural.png",
+    embed: generateEmbed("tt0460681", "series"),
+    featured: false,
+    type: "series"
+  },
+  {
+    id: "tt0903747",
+    title: "Breaking Bad",
+    year: 2008,
+    rating: "9.5",
+    duration: null,
+    seasons: 5,
+    episodes: 62,
+    genre: "Drama",
+    classification: "16+",
+    directors: null,
+    creator: "Vince Gilligan",
+    creatorImage: "https://image.tmdb.org/t/p/w200/vQSqLRqHpu4W0mVRX53Bj8hfWKo.jpg",
+    cast: [
+      { name: "Bryan Cranston", photo: "https://image.tmdb.org/t/p/w200/5XKoaXMZKbE9D0xGHTI4VGVMkGW.jpg" },
+      { name: "Aaron Paul", photo: "https://image.tmdb.org/t/p/w200/khuwRCeWmjQaSTgKWfZqXm8OjhM.jpg" },
+      { name: "Anna Gunn", photo: "https://image.tmdb.org/t/p/w200/cNFhYrmGE0nCVPKXjHi2P8vt4qP.jpg" },
+      { name: "RJ Mitte", photo: "https://image.tmdb.org/t/p/w200/86H8YIZkJdIhYjNgpKwCn5vP9qT.jpg" }
+    ],
+    description: "Um professor de química do ensino médio se transforma em um fabricante de metanfetamina.",
+    fullDescription: "Breaking Bad segue Walter White, um professor de química do ensino médio lutando financeiramente que é diagnosticado com câncer de pulmão inoperável. Junto com seu ex-aluno Jesse Pinkman, White se transforma no mundo do crime, produzindo e vendendo metanfetamina cristalizada para garantir o futuro financeiro de sua família antes de morrer.",
+    poster: "https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+    backdrop: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKIhThuZYgg3RGX14v7kQKvrdOxqeJc53SYQ&s",
+    embed: generateEmbed("tt0903747", "series"),
+    featured: false,
+    type: "series"
+  },
+  {
+    id: "tt10872600",
+    title: "Homem-Aranha: Sem Volta Para Casa",
+    year: 2021,
+    rating: "8.2",
+    duration: "148 min",
+    seasons: null,
+    episodes: null,
+    genre: "Ação",
+    classification: "12+",
+    directors: [
+      { name: "Jon Watts", photo: "https://image.tmdb.org/t/p/w200/6r7rXb2mDJMF1YGxbRX3uCPqzOe.jpg" }
+    ],
+    creator: null,
+    creatorImage: null,
+    cast: [
+      { name: "Tom Holland", photo: "https://image.tmdb.org/t/p/w200/yQHH9Ovj7WY1Hnz56Th54tDEBpA.jpg" },
+      { name: "Zendaya", photo: "https://image.tmdb.org/t/p/w200/kg1zxGHrBMQRksM8kltlmj1JLzI.jpg" },
+      { name: "Benedict Cumberbatch", photo: "https://image.tmdb.org/t/p/w200/6S6I3w6jIQrEG5WBDFfV6Vt0REQ.jpg" }
+    ],
+    description: "Peter Parker busca a ajuda do Doutor Estranho para fazer todos esquecerem a identidade do Homem-Aranha. Quando um feitiço dá errado, inimigos perigosos de outros mundos começam a aparecer.",
+    fullDescription: "Peter Parker está desenmascarado e não consegue mais separar sua vida normal dos grandes riscos de ser um super-herói. Quando ele pede ajuda ao Doutor Estranho, os riscos se tornam ainda mais perigosos, forçando-o a descobrir o que realmente significa ser o Homem-Aranha.",
+    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+    backdrop: "https://image.tmdb.org/t/p/original/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg",
+    embed: generateEmbed("tt10872600", "movie"),
+    featured: false,
+    type: "movie"
+  },
+  {
+    id: "tt0944947",
+    title: "Game of Thrones",
+    year: 2011,
+    rating: "9.3",
+    duration: null,
+    seasons: 8,
+    episodes: 73,
+    genre: "Drama",
+    classification: "18+",
+    directors: null,
+    creator: "David Benioff",
+    creatorImage: "https://image.tmdb.org/t/p/w200/xvNN5huL0X8yJ7h3IZfGG4O2zBD.jpg",
+    cast: [
+      { name: "Emilia Clarke", photo: "https://image.tmdb.org/t/p/w200/dGhEWH0VvPwOGdJgAn8sJ2xJ6R8.jpg" },
+      { name: "Peter Dinklage", photo: "https://image.tmdb.org/t/p/w200/9NAkHlrUc7fJ4LHW2F4lG2SOGpm.jpg" },
+      { name: "Kit Harington", photo: "https://image.tmdb.org/t/p/w200/4MnqF8HY8VfLYnMaEaEQhfO01Qo.jpg" },
+      { name: "Lena Headey", photo: "https://image.tmdb.org/t/p/w200/ckqcJLLG2zVFSPyBDZXKl7aKRIK.jpg" }
+    ],
+    description: "Nove famílias nobres lutam pelo controle das terras de Westeros, enquanto um antigo inimigo retorna.",
+    fullDescription: "Game of Thrones é uma série épica de fantasia medieval que segue as lutas políticas de várias casas nobres pelo controle do Trono de Ferro dos Sete Reinos de Westeros. Baseada na série de livros 'As Crônicas de Gelo e Fogo' de George R.R. Martin, a série é conhecida por suas tramas complexas, personagens moralmente ambíguos e reviravoltas chocantes.",
+    poster: "https://image.tmdb.org/t/p/w500/7WUHnWGx5OO145IRxPDUkQSh4C7.jpg",
+    backdrop: "https://image.tmdb.org/t/p/original/lGS6oOnnmWYLOnCGWZ8vSZZNaTe.jpg",
+    embed: generateEmbed("tt0944947", "series"),
+    featured: false,
+    type: "series"
+  }
+];
 
 // Função utilitária para cores de classificação - preservada do código original
 const getClassificationColor = (classification) => {
@@ -88,97 +513,116 @@ const getPosterImage = (fallbackUrl) => {
   return fallbackUrl || 'https://via.placeholder.com/300x450/666666/ffffff?text=Poster';
 };
 
-// Função de requisição API - convertida de client/src/lib/queryClient.ts
-async function throwIfResNotOk(res) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
+// Storage functions - convertidas de server/storage.ts
+function initializeContent() {
+  allContent = [...sampleContent];
+  featuredContent = sampleContent.filter(item => item.featured);
+  userListContent = [];
 }
 
+function getAllContent() {
+  return Promise.resolve(allContent);
+}
+
+function getContentById(id) {
+  const content = allContent.find(item => item.id === id);
+  return Promise.resolve(content);
+}
+
+function getContentByType(type) {
+  const content = allContent.filter(item => item.type === type);
+  return Promise.resolve(content);
+}
+
+function getFeaturedContent() {
+  return Promise.resolve(featuredContent);
+}
+
+function searchContent(query) {
+  if (!query) return Promise.resolve([]);
+  
+  const lowerQuery = query.toLowerCase();
+  const results = allContent.filter(item => 
+    item.title.toLowerCase().includes(lowerQuery) ||
+    item.genre.toLowerCase().includes(lowerQuery) ||
+    item.description.toLowerCase().includes(lowerQuery) ||
+    item.cast.some(actor => {
+      const actorName = typeof actor === 'string' ? actor : actor.name;
+      return actorName.toLowerCase().includes(lowerQuery);
+    })
+  );
+  
+  return Promise.resolve(results);
+}
+
+function getUserList(userId) {
+  const userList = userLists.filter(item => item.userId === userId);
+  return Promise.resolve(userList.map(item => item.contentId));
+}
+
+function addToUserList(userId, contentId) {
+  const userList = {
+    id: Date.now().toString(),
+    userId: userId,
+    contentId: contentId,
+    addedAt: new Date().toISOString()
+  };
+  userLists.push(userList);
+  return Promise.resolve(userList);
+}
+
+function removeFromUserList(userId, contentId) {
+  const index = userLists.findIndex(item => 
+    item.userId === userId && item.contentId === contentId
+  );
+  if (index > -1) {
+    userLists.splice(index, 1);
+    return Promise.resolve(true);
+  }
+  return Promise.resolve(false);
+}
+
+function isInUserList(userId, contentId) {
+  const exists = userLists.some(item => 
+    item.userId === userId && item.contentId === contentId
+  );
+  return Promise.resolve(exists);
+}
+
+// Simulação de API requests - convertidas de client/src/lib/queryClient.ts
 async function apiRequest(method, url, data) {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
-
-  await throwIfResNotOk(res);
-  return res;
-}
-
-// Cache e fetch de dados
-async function fetchData(url, cacheKey) {
-  if (cache.has(cacheKey)) {
-    return cache.get(cacheKey);
+  // Simulação de delay da API
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  if (url === "/api/content") {
+    return { json: () => getAllContent() };
+  } else if (url === "/api/content?featured=true") {
+    return { json: () => getFeaturedContent() };
+  } else if (url.startsWith("/api/content?search=")) {
+    const query = decodeURIComponent(url.split("search=")[1]);
+    return { json: () => searchContent(query) };
+  } else if (url === "/api/user-list") {
+    if (method === "POST" && data) {
+      await addToUserList(currentUser.id, data.contentId);
+      return { json: () => Promise.resolve({ success: true }) };
+    } else {
+      const contentIds = await getUserList(currentUser.id);
+      const content = [];
+      for (const contentId of contentIds) {
+        const item = await getContentById(contentId);
+        if (item) {
+          content.push(item);
+        }
+      }
+      return { json: () => Promise.resolve(content) };
+    }
+  } else if (url.startsWith("/api/user-list/") && method === "DELETE") {
+    const contentId = url.split("/api/user-list/")[1];
+    await removeFromUserList(currentUser.id, contentId);
+    return { json: () => Promise.resolve({ success: true }) };
   }
-
-  try {
-    const response = await fetch(url, {
-      credentials: "include",
-    });
-    await throwIfResNotOk(response);
-    const data = await response.json();
-    cache.set(cacheKey, data);
-    return data;
-  } catch (error) {
-    console.error(`Error fetching ${url}:`, error);
-    return [];
-  }
-}
-
-// Fetch de todo o conteúdo
-async function fetchAllContent() {
-  allContent = await fetchData("/api/content", "/api/content");
-  return allContent;
-}
-
-// Fetch de conteúdo em destaque
-async function fetchFeaturedContent() {
-  featuredContent = await fetchData("/api/content?featured=true", "/api/content/featured");
-  return featuredContent;
-}
-
-// Fetch da lista do usuário
-async function fetchUserListContent() {
-  userListContent = await fetchData("/api/user-list", "/api/user-list");
-  return userListContent;
-}
-
-// Fetch de resultados de busca
-async function fetchSearchResults(term) {
-  if (!term) {
-    searchResults = [];
-    return searchResults;
-  }
-  searchResults = await fetchData(`/api/content?search=${encodeURIComponent(term)}`, `/api/content/search/${term}`);
-  return searchResults;
-}
-
-// Mutações para lista do usuário - convertidas das mutations do React Query
-async function addToListMutation(contentId) {
-  try {
-    await apiRequest("POST", "/api/user-list", { contentId });
-    // Invalidar cache
-    cache.delete("/api/user-list");
-    await fetchUserListContent();
-    updateMyListSection();
-  } catch (error) {
-    console.error("Error adding to list:", error);
-  }
-}
-
-async function removeFromListMutation(contentId) {
-  try {
-    await apiRequest("DELETE", `/api/user-list/${contentId}`);
-    // Invalidar cache
-    cache.delete("/api/user-list");
-    await fetchUserListContent();
-    updateMyListSection();
-  } catch (error) {
-    console.error("Error removing from list:", error);
-  }
+  
+  throw new Error(`API endpoint not found: ${url}`);
 }
 
 // Filtros de conteúdo
@@ -237,6 +681,8 @@ function goBack() {
   selectedContent = null;
   searchTerm = "";
   selectedCategory = null;
+  showInlinePlayer = false;
+  hideInlinePlayerView();
   window.scrollTo(0, 0);
   showHomeView();
 }
@@ -247,17 +693,95 @@ function openSearch() {
   showSearchView();
 }
 
-function toggleFavorite(contentId) {
+async function toggleFavorite(contentId) {
   const isInList = userListContent.some(item => item.id === contentId);
   if (isInList) {
-    removeFromListMutation(contentId);
+    await removeFromListMutation(contentId);
   } else {
-    addToListMutation(contentId);
+    await addToListMutation(contentId);
   }
 }
 
 function isInUserList(contentId) {
   return userListContent.some(item => item.id === contentId);
+}
+
+// Mutações para lista do usuário - convertidas das mutations do React Query
+async function addToListMutation(contentId) {
+  try {
+    await apiRequest("POST", "/api/user-list", { contentId });
+    await fetchUserListContent();
+    updateMyListSection();
+    // Update details view if currently showing this content
+    if (selectedContent && selectedContent.id === contentId) {
+      updateDetailsView();
+    }
+  } catch (error) {
+    console.error("Error adding to list:", error);
+  }
+}
+
+async function removeFromListMutation(contentId) {
+  try {
+    await apiRequest("DELETE", `/api/user-list/${contentId}`);
+    await fetchUserListContent();
+    updateMyListSection();
+    // Update details view if currently showing this content
+    if (selectedContent && selectedContent.id === contentId) {
+      updateDetailsView();
+    }
+  } catch (error) {
+    console.error("Error removing from list:", error);
+  }
+}
+
+// Fetch functions
+async function fetchAllContent() {
+  try {
+    const response = await apiRequest("GET", "/api/content");
+    allContent = await response.json();
+    return allContent;
+  } catch (error) {
+    console.error("Error fetching content:", error);
+    return [];
+  }
+}
+
+async function fetchFeaturedContent() {
+  try {
+    const response = await apiRequest("GET", "/api/content?featured=true");
+    featuredContent = await response.json();
+    return featuredContent;
+  } catch (error) {
+    console.error("Error fetching featured content:", error);
+    return [];
+  }
+}
+
+async function fetchUserListContent() {
+  try {
+    const response = await apiRequest("GET", "/api/user-list");
+    userListContent = await response.json();
+    return userListContent;
+  } catch (error) {
+    console.error("Error fetching user list:", error);
+    return [];
+  }
+}
+
+async function fetchSearchResults(term) {
+  if (!term) {
+    searchResults = [];
+    return searchResults;
+  }
+  try {
+    const response = await apiRequest("GET", `/api/content?search=${encodeURIComponent(term)}`);
+    searchResults = await response.json();
+    return searchResults;
+  } catch (error) {
+    console.error("Error fetching search results:", error);
+    return [];
+  }
 }
 
 // Auto-rotação de conteúdo em destaque - convertida do useEffect
@@ -345,6 +869,7 @@ function handleTouchEnd() {
 // ContentCard component - convertida do componente React
 function createContentCard(item) {
   const isInList = isInUserList(item.id);
+  const itemJsonEscaped = JSON.stringify(item).replace(/"/g, '&quot;');
   
   return `
     <div class="group relative cursor-pointer streaming-card-hover content-card fade-in" data-testid="card-content-${item.id}">
@@ -375,11 +900,11 @@ function createContentCard(item) {
             <div class="flex justify-center space-x-2">
               <button 
                 class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 p-3 rounded-full transition-all duration-300 hover:scale-110 shadow-lg" 
-                onclick="openDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})"
+                onclick="openDetails(JSON.parse('${itemJsonEscaped}'))"
                 data-testid="button-play-${item.id}"
                 title="Assistir"
               >
-                <i data-lucide="play" class="w-4 h-4 text-white"></i>
+                <svg class="w-4 h-4 text-white" data-lucide="play"></svg>
               </button>
               <button 
                 class="p-3 rounded-full transition-all duration-300 hover:scale-110 shadow-lg ${
@@ -391,7 +916,7 @@ function createContentCard(item) {
                 data-testid="button-favorite-${item.id}"
                 title="${isInList ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}"
               >
-                <i data-lucide="${isInList ? 'check' : 'heart'}" class="w-4 h-4 text-white"></i>
+                <svg class="w-4 h-4 text-white" data-lucide="${isInList ? 'check' : 'heart'}"></svg>
               </button>
             </div>
           </div>
@@ -409,7 +934,7 @@ function createContentCard(item) {
       <div class="space-y-2 px-1">
         <h4 
           class="font-bold text-base md:text-lg leading-tight cursor-pointer hover:text-purple-400 transition-colors group-hover:text-purple-400 line-clamp-2" 
-          onclick="openDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})"
+          onclick="openDetails(JSON.parse('${itemJsonEscaped}'))"
           data-testid="text-title-${item.id}"
         >
           ${item.title}
@@ -468,10 +993,12 @@ function updateHeroContent() {
       </span>
       <span class="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm px-3 py-2 rounded-full border border-purple-400/30 font-semibold" data-testid="text-hero-genre">${currentFeatured.genre}</span>
       ${currentFeatured.seasons ? `<span class="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full border border-white/20 font-semibold" data-testid="text-hero-seasons">${currentFeatured.seasons} temporadas</span>` : ''}
-      ${currentFeatured.duration ? `<span class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full border border-white/20"><i data-lucide="clock" class="w-3 h-3"></i><span class="font-semibold" data-testid="text-hero-duration">${currentFeatured.duration}</span></span>` : ''}
+      ${currentFeatured.duration ? `<span class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full border border-white/20"><svg class="w-3 h-3" data-lucide="clock"></svg><span class="font-semibold" data-testid="text-hero-duration">${currentFeatured.duration}</span></span>` : ''}
       <span class="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full border border-white/20 font-semibold" data-testid="text-hero-year">${currentFeatured.year}</span>
     `;
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 
   // Update description
@@ -497,7 +1024,9 @@ function updateFeaturedSection() {
   const container = document.getElementById('featured-content');
   if (container && featuredContent.length > 0) {
     container.innerHTML = featuredContent.map(item => createContentCard(item)).join('');
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 }
 
@@ -506,7 +1035,9 @@ function updateMoviesSection() {
   if (container) {
     const movies = getMovies();
     container.innerHTML = movies.map(item => createContentCard(item)).join('');
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 }
 
@@ -515,7 +1046,9 @@ function updateSeriesSection() {
   if (container) {
     const series = getSeries();
     container.innerHTML = series.map(item => createContentCard(item)).join('');
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 }
 
@@ -527,13 +1060,15 @@ function updateMyListSection() {
     } else {
       container.innerHTML = `
         <div class="text-center py-12 px-6">
-          <i data-lucide="heart" class="mx-auto mb-4 text-gray-600 w-16 h-16"></i>
+          <svg class="mx-auto mb-4 text-gray-600 w-16 h-16" data-lucide="heart"></svg>
           <h4 class="text-xl font-bold mb-2 text-gray-300">Sua lista está vazia</h4>
           <p class="text-gray-400">Adicione filmes e séries aos seus favoritos para vê-los aqui</p>
         </div>
       `;
     }
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 }
 
@@ -622,10 +1157,12 @@ function updateDetailsView() {
         <span class="text-white font-semibold" data-testid="text-rating">${selectedContent.rating}</span>
       </span>
       <span class="bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full" data-testid="text-year">${selectedContent.year}</span>
-      ${selectedContent.duration ? `<span class="flex items-center space-x-1 bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i><span data-testid="text-duration">${selectedContent.duration}</span></span>` : ''}
+      ${selectedContent.duration ? `<span class="flex items-center space-x-1 bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full"><svg class="w-3 h-3" data-lucide="clock"></svg><span data-testid="text-duration">${selectedContent.duration}</span></span>` : ''}
       ${selectedContent.seasons ? `<span class="bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full" data-testid="text-seasons">${selectedContent.seasons} temporadas • ${selectedContent.episodes} episódios</span>` : ''}
     `;
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 
   // Update synopsis header
@@ -673,11 +1210,13 @@ function updateDetailsView() {
       : 'bg-gray-600/80 backdrop-blur-sm hover:bg-gray-600 text-white'
     }`;
     buttonFavorite.innerHTML = `
-      <i data-lucide="${isInList ? 'check' : 'heart'}" class="w-5 h-5"></i>
+      <svg class="w-5 h-5" data-lucide="${isInList ? 'check' : 'heart'}"></svg>
       <span>${isInList ? "Favorito" : "Favoritar"}</span>
     `;
     buttonFavorite.onclick = () => toggleFavorite(selectedContent.id);
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 
   // Update watch button
@@ -783,12 +1322,14 @@ async function performSearch(term) {
           Nenhum resultado para "${term}"
         </h2>
         <div class="text-center py-20">
-          <i data-lucide="search" class="mx-auto mb-4 text-gray-600 w-16 h-16"></i>
+          <svg class="mx-auto mb-4 text-gray-600 w-16 h-16" data-lucide="search"></svg>
           <p class="text-gray-400 text-lg">Tente outra busca</p>
         </div>
       `;
     }
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 }
 
@@ -828,6 +1369,9 @@ function setupEventListeners() {
 
 // Inicialização
 async function initializeApp() {
+  // Initialize content
+  initializeContent();
+  
   // Setup event listeners
   setupEventListeners();
   
