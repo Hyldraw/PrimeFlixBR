@@ -5,234 +5,389 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StreamFlix - Sua plataforma de streaming</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar fixed top-0 left-0 right-0 z-50" id="navbar">
         <div class="navbar-content">
             <div class="navbar-left">
-                <div class="logo">StreamFlix</div>
-                <div class="nav-links" id="navLinks">
-                    <a href="#home" onclick="navigateTo('home')" class="nav-link">Início</a>
-                    <a href="#movies" onclick="navigateTo('movies')" class="nav-link">Filmes</a>
-                    <a href="#series" onclick="navigateTo('series')" class="nav-link">Séries</a>
-                    <a href="#watchlist" onclick="navigateTo('watchlist')" class="nav-link user-only" style="display: none;">Minha Lista</a>
+                <div class="logo gradient-text" onclick="navigateTo('home')">StreamFlix</div>
+                <div class="nav-links desktop-only" id="navLinks">
+                    <button onclick="setActiveCategory('home')" class="nav-link" data-category="home">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                        <span>Início</span>
+                    </button>
+                    <button onclick="setActiveCategory('movies')" class="nav-link" data-category="movies">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                        <span>Filmes</span>
+                    </button>
+                    <button onclick="setActiveCategory('series')" class="nav-link" data-category="series">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                        <span>Séries</span>
+                    </button>
+                    <button onclick="setActiveCategory('mylist')" class="nav-link user-only" data-category="mylist" style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <span>Minha Lista</span>
+                    </button>
                 </div>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle mobile-only" onclick="toggleMobileMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
             </div>
 
             <!-- Search -->
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Buscar filmes e séries..." class="search-input">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Buscar filmes e séries..." class="search-input">
+                    <button class="search-button" onclick="openSearch()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- User Menu -->
             <div class="user-menu">
                 <div class="auth-buttons" id="authButtons">
-                    <button onclick="navigateTo('login')" class="btn btn-secondary">Entrar</button>
-                    <button onclick="navigateTo('register')" class="btn btn-primary">Cadastrar</button>
+                    <button onclick="showAuthModal('login')" class="btn btn-secondary">Entrar</button>
+                    <button onclick="showAuthModal('register')" class="btn btn-primary">Cadastrar</button>
                 </div>
                 <div class="user-info" id="userInfo" style="display: none;">
-                    <span class="username" id="usernameDisplay"></span>
-                    <button onclick="logout()" class="btn btn-secondary">Sair</button>
+                    <div class="user-avatar" onclick="toggleUserMenu()">
+                        <span class="username" id="usernameDisplay"></span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <button onclick="logout()" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16,17 21,12 16,7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            Sair
+                        </button>
+                    </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-nav-links">
+                <button onclick="setActiveCategory('home'); closeMobileMenu()" class="mobile-nav-link" data-category="home">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    <span>Início</span>
+                </button>
+                <button onclick="setActiveCategory('movies'); closeMobileMenu()" class="mobile-nav-link" data-category="movies">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Filmes</span>
+                </button>
+                <button onclick="setActiveCategory('series'); closeMobileMenu()" class="mobile-nav-link" data-category="series">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Séries</span>
+                </button>
+                <button onclick="setActiveCategory('mylist'); closeMobileMenu()" class="mobile-nav-link user-only" data-category="mylist" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <span>Minha Lista</span>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main id="mainContent">
-        <!-- Home Page -->
-        <div id="homePage" class="page">
-            <!-- Hero Section -->
-            <div class="hero" id="heroSection">
-                <div class="hero-content">
-                    <h1 class="hero-title" id="heroTitle"></h1>
-                    <p class="hero-description" id="heroDescription"></p>
-                    <div class="hero-buttons">
-                        <button onclick="watchContent()" class="btn btn-primary btn-large">▶ Assistir</button>
-                        <button onclick="toggleWatchlist(window.featuredContent?.id)" class="btn btn-secondary btn-large user-only" style="display: none;">+ Minha Lista</button>
+    <main class="main-content" id="mainContent">
+        <!-- Main View Container -->
+        <div class="view-container" id="viewContainer">
+            
+            <!-- Hero Section (only on home) -->
+            <div class="hero-section" id="heroSection" style="display: none;">
+                <div class="hero-carousel" id="heroCarousel"></div>
+                
+                <!-- Progress Bar -->
+                <div class="hero-progress-container" id="heroProgressContainer">
+                    <div class="hero-progress-bar">
+                        <div class="hero-progress-fill" id="heroProgressFill"></div>
                     </div>
                 </div>
             </div>
-
-            <!-- Content Sections -->
-            <div class="content-sections">
-                <section class="content-section">
-                    <h2 class="section-title">Em Destaque</h2>
-                    <div class="content-grid" id="featuredGrid"></div>
-                </section>
-
-                <section class="content-section">
-                    <h2 class="section-title">Todos os Conteúdos</h2>
-                    <div class="content-grid" id="allContentGrid"></div>
-                </section>
-            </div>
-        </div>
-
-        <!-- Movies Page -->
-        <div id="moviesPage" class="page" style="display: none;">
-            <div class="page-header">
-                <h1>Filmes</h1>
-            </div>
-            <div class="content-sections">
-                <section class="content-section">
-                    <h2 class="section-title">Filmes em Destaque</h2>
-                    <div class="content-grid" id="featuredMoviesGrid"></div>
-                </section>
-                <section class="content-section">
-                    <h2 class="section-title">Todos os Filmes</h2>
-                    <div class="content-grid" id="allMoviesGrid"></div>
-                </section>
-            </div>
-        </div>
-
-        <!-- Series Page -->
-        <div id="seriesPage" class="page" style="display: none;">
-            <div class="page-header">
-                <h1>Séries</h1>
-            </div>
-            <div class="content-sections">
-                <section class="content-section">
-                    <h2 class="section-title">Séries em Destaque</h2>
-                    <div class="content-grid" id="featuredSeriesGrid"></div>
-                </section>
-                <section class="content-section">
-                    <h2 class="section-title">Todas as Séries</h2>
-                    <div class="content-grid" id="allSeriesGrid"></div>
-                </section>
-            </div>
-        </div>
-
-        <!-- Watchlist Page -->
-        <div id="watchlistPage" class="page" style="display: none;">
-            <div class="page-header">
-                <h1>Minha Lista</h1>
-            </div>
-            <div class="content-sections">
-                <div id="watchlistEmpty" class="empty-state" style="display: none;">
-                    <div class="empty-icon">📝</div>
-                    <h2>Sua lista está vazia</h2>
-                    <p>Adicione filmes e séries à sua lista para assistir mais tarde.</p>
+            
+            <!-- Content Container -->
+            <div class="content-container" id="contentContainer">
+                
+                <!-- Category Header -->
+                <div class="category-header" id="categoryHeader">
+                    <h1 class="category-title" id="categoryTitle">Início</h1>
+                    <div class="category-description" id="categoryDescription"></div>
+                </div>
+                
+                <!-- Category Grid (for movies/series categories) -->
+                <div class="category-grid" id="categoryGrid" style="display: none;"></div>
+                
+                <!-- Content Sections -->
+                <div class="content-sections" id="contentSections"></div>
+                
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon" id="emptyIcon">📝</div>
+                    <h2 class="empty-title" id="emptyTitle">Sua lista está vazia</h2>
+                    <p class="empty-description" id="emptyDescription">Adicione filmes e séries à sua lista para assistir mais tarde.</p>
                     <div class="empty-buttons">
-                        <button onclick="navigateTo('movies')" class="btn btn-primary">Explorar Filmes</button>
-                        <button onclick="navigateTo('series')" class="btn btn-secondary">Explorar Séries</button>
+                        <button onclick="setActiveCategory('movies')" class="btn btn-primary">Explorar Filmes</button>
+                        <button onclick="setActiveCategory('series')" class="btn btn-secondary">Explorar Séries</button>
                     </div>
-                </div>
-                <div class="content-grid" id="watchlistGrid"></div>
-            </div>
-        </div>
-
-        <!-- Content Detail Page -->
-        <div id="contentDetailPage" class="page" style="display: none;">
-            <div class="detail-hero" id="detailHero">
-                <div class="detail-content">
-                    <h1 class="detail-title" id="detailTitle"></h1>
-                    <div class="detail-meta" id="detailMeta"></div>
-                    <p class="detail-description" id="detailDescription"></p>
-                    <div class="detail-buttons">
-                        <button onclick="watchCurrentContent()" class="btn btn-primary btn-large">▶ Assistir Agora</button>
-                        <button onclick="toggleWatchlist(window.currentContent?.id)" class="btn btn-secondary btn-large user-only" id="watchlistBtn" style="display: none;">Adicionar à Lista</button>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-info">
-                <div class="detail-main">
-                    <section class="detail-section">
-                        <h2>Sinopse</h2>
-                        <p id="detailFullDescription"></p>
-                    </section>
-                    <section class="detail-section" id="castSection">
-                        <h2>Elenco</h2>
-                        <div class="cast-grid" id="castGrid"></div>
-                    </section>
-                    <section class="detail-section" id="directorsSection">
-                        <h2>Direção</h2>
-                        <div class="cast-grid" id="directorsGrid"></div>
-                    </section>
-                </div>
-                <div class="detail-sidebar">
-                    <img id="detailPoster" class="detail-poster" alt="">
-                    <div class="detail-specs" id="detailSpecs"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Login Page -->
-        <div id="loginPage" class="page auth-page" style="display: none;">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <h1 class="auth-logo">StreamFlix</h1>
-                    <h2>Entrar na sua conta</h2>
-                    <p>Acesse milhares de filmes e séries</p>
-                </div>
-                <form class="auth-form" onsubmit="login(event)">
-                    <div class="form-group">
-                        <label for="loginUsername">Nome de usuário</label>
-                        <input type="text" id="loginUsername" required placeholder="Digite seu nome de usuário">
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Senha</label>
-                        <input type="password" id="loginPassword" required placeholder="Digite sua senha">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-large">Entrar</button>
-                </form>
-                <div class="auth-footer">
-                    <p>Não tem uma conta? <a href="#register" onclick="navigateTo('register')">Cadastre-se agora</a></p>
+        <!-- Search View -->
+        <div class="search-view" id="searchView" style="display: none;">
+            <div class="search-header">
+                <button onclick="closeSearch()" class="back-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="15,18 9,12 15,6"/>
+                    </svg>
+                    <span>Voltar</span>
+                </button>
+                
+                <div class="search-input-large">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInputLarge" placeholder="Buscar filmes e séries..." class="search-input-field">
                 </div>
             </div>
-        </div>
-
-        <!-- Register Page -->
-        <div id="registerPage" class="page auth-page" style="display: none;">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <h1 class="auth-logo">StreamFlix</h1>
-                    <h2>Criar sua conta</h2>
-                    <p>Junte-se a milhões de usuários</p>
-                </div>
-                <form class="auth-form" onsubmit="register(event)">
-                    <div class="form-group">
-                        <label for="registerUsername">Nome de usuário</label>
-                        <input type="text" id="registerUsername" required placeholder="Escolha um nome de usuário">
-                    </div>
-                    <div class="form-group">
-                        <label for="registerPassword">Senha</label>
-                        <input type="password" id="registerPassword" required minlength="6" placeholder="Crie uma senha (mín. 6 caracteres)">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-large">Criar Conta</button>
-                </form>
-                <div class="auth-footer">
-                    <p>Já tem uma conta? <a href="#login" onclick="navigateTo('login')">Entrar agora</a></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Search Results Page -->
-        <div id="searchPage" class="page" style="display: none;">
-            <div class="page-header">
-                <h1 id="searchTitle">Resultados da Busca</h1>
-            </div>
-            <div class="content-sections">
-                <div id="searchEmpty" class="empty-state" style="display: none;">
+            
+            <div class="search-results" id="searchResults">
+                <div class="search-empty" id="searchEmpty">
                     <div class="empty-icon">🔍</div>
-                    <h2>Nenhum resultado encontrado</h2>
-                    <p>Tente buscar por outro termo.</p>
+                    <h2>Pesquise por filmes e séries</h2>
+                    <p>Digite algo na busca para encontrar seus conteúdos favoritos.</p>
                 </div>
-                <div class="content-grid" id="searchGrid"></div>
+                
+                <div class="search-results-content" id="searchResultsContent" style="display: none;">
+                    <h2 class="search-results-title" id="searchResultsTitle"></h2>
+                    <div class="search-results-grid" id="searchResultsGrid"></div>
+                </div>
             </div>
         </div>
+
+        <!-- Details View -->
+        <div class="details-view" id="detailsView" style="display: none;">
+            <div class="details-header" id="detailsHeader">
+                <button onclick="closeDetails()" class="back-button details-back">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="15,18 9,12 15,6"/>
+                    </svg>
+                    <span>Voltar</span>
+                </button>
+                
+                <div class="classification-badge" id="classificationBadge"></div>
+            </div>
+            
+            <div class="details-hero" id="detailsHero">
+                <div class="details-backdrop" id="detailsBackdrop"></div>
+                <div class="details-gradient"></div>
+                
+                <div class="details-content">
+                    <div class="details-info">
+                        <div class="details-poster-small" id="detailsPosterSmall"></div>
+                        
+                        <div class="details-main-info">
+                            <h1 class="details-title" id="detailsTitle"></h1>
+                            
+                            <div class="details-meta" id="detailsMeta"></div>
+                            
+                            <p class="details-description" id="detailsDescription"></p>
+                            
+                            <div class="details-buttons">
+                                <button onclick="openPlayer()" class="btn btn-primary btn-large play-button">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5,3 19,12 5,21"/>
+                                    </svg>
+                                    Assistir Agora
+                                </button>
+                                
+                                <button onclick="toggleCurrentFavorite()" class="btn btn-secondary btn-large favorite-button user-only" id="favoriteButton" style="display: none;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" id="favoriteIcon">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                    <span id="favoriteText">Adicionar à Lista</span>
+                                </button>
+                                
+                                <button onclick="openInlinePlayer()" class="btn btn-secondary btn-large info-button">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="16" x2="12" y2="12"/>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                    </svg>
+                                    Mais Informações
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Inline Player -->
+            <div class="inline-player" id="inlinePlayer" style="display: none;">
+                <iframe id="inlinePlayerFrame" class="inline-player-frame" frameborder="0" allowfullscreen></iframe>
+                <button onclick="closeInlinePlayer()" class="inline-player-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Details Extended Info -->
+            <div class="details-extended" id="detailsExtended">
+                <div class="details-extended-content">
+                    <div class="details-main-column">
+                        <section class="details-section">
+                            <h2>Sinopse Completa</h2>
+                            <p id="detailsFullDescription"></p>
+                        </section>
+                        
+                        <section class="details-section" id="castSection">
+                            <h2>Elenco</h2>
+                            <div class="cast-grid" id="castGrid"></div>
+                        </section>
+                        
+                        <section class="details-section" id="directorsSection">
+                            <h2>Direção</h2>
+                            <div class="directors-grid" id="directorsGrid"></div>
+                        </section>
+                    </div>
+                    
+                    <div class="details-sidebar">
+                        <div class="details-poster-large" id="detailsPosterLarge"></div>
+                        
+                        <div class="details-specs" id="detailsSpecs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </main>
 
+    <!-- Modal Player -->
+    <div class="modal-player" id="modalPlayer" style="display: none;">
+        <div class="modal-player-backdrop" onclick="closeModalPlayer()"></div>
+        <div class="modal-player-content">
+            <button onclick="closeModalPlayer()" class="modal-player-close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <iframe id="modalPlayerFrame" class="modal-player-frame" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+    
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal" style="display: none;">
+        <div class="auth-modal-backdrop" onclick="closeAuthModal()"></div>
+        <div class="auth-modal-content">
+            <button onclick="closeAuthModal()" class="auth-modal-close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            
+            <div class="auth-modal-header">
+                <h1 class="auth-logo gradient-text">StreamFlix</h1>
+                <h2 id="authModalTitle">Entrar na sua conta</h2>
+                <p id="authModalSubtitle">Acesse milhares de filmes e séries</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form" id="loginForm" onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="loginUsername">Nome de usuário</label>
+                    <input type="text" id="loginUsername" required placeholder="Digite seu nome de usuário">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn btn-primary btn-large btn-full">Entrar</button>
+            </form>
+            
+            <!-- Register Form -->
+            <form class="auth-form" id="registerForm" onsubmit="register(event)" style="display: none;">
+                <div class="form-group">
+                    <label for="registerUsername">Nome de usuário</label>
+                    <input type="text" id="registerUsername" required placeholder="Escolha um nome de usuário">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" required minlength="6" placeholder="Crie uma senha (mín. 6 caracteres)">
+                </div>
+                <button type="submit" class="btn btn-primary btn-large btn-full">Criar Conta</button>
+            </form>
+            
+            <div class="auth-modal-footer">
+                <div id="authToggle">
+                    <span id="authToggleText">Não tem uma conta?</span>
+                    <button onclick="toggleAuthMode()" class="auth-toggle-button" id="authToggleButton">Cadastre-se agora</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
-
+    
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="loading-spinner"></div>
+        <p class="loading-text">Carregando...</p>
     </div>
 
     <script src="script.js"></script>
